@@ -4,6 +4,10 @@ import { JSDOM } from 'jsdom'
 
 import Puppeteer from 'puppeteer-core'
 
+import { body_tag, meta_tag } from './utility'
+
+import { stringify } from 'yaml'
+
 import TurnDown from 'turndown'
 
 const executablePath = getNPMConfig('chrome'),
@@ -13,33 +17,56 @@ const executablePath = getNPMConfig('chrome'),
         bulletListMarker: '-',
         codeBlockStyle: 'fenced',
         linkStyle: 'referenced'
-    }),
-    body_tag = [
-        'article',
-        'main',
-        '.article',
-        '.content',
-        '.main',
-        '.container',
-        'body'
-    ]
+    })
 
 var document, browser, page
 
-export function fetchPage(selector) {
+/**
+ * @param {String[]} selector
+ * @param {?Object}  meta
+ * @param {String[]} meta.authors
+ * @param {String[]} meta.date
+ * @param {String[]} meta.updated
+ * @param {String[]} meta.categories
+ * @param {String[]} meta.tags
+ *
+ * @return {Object}
+ */
+export function fetchPage(selector, meta) {
     var tag
 
     while ((tag = selector.shift()))
-        if ((tag = document.querySelector(tag)))
-            return {
+        if ((tag = document.querySelector(tag))) {
+            const _meta_ = {}
+
+            for (let key in meta) {
+                let tag = document.querySelector(meta[key] + '')
+
+                if (!tag) continue
+
+                _meta_[key] = Array.from(tag.children, item =>
+                    item.textContent.trim()
+                ).filter(Boolean)
+
+                if (!_meta_[key][1]) _meta_[key] = _meta_[key][0] || ''
+            }
+
+            return Object.assign(_meta_, {
                 title: (
                     (tag.querySelector('h1') || document.querySelector('h1'))
                         .textContent || document.title
                 ).trim(),
                 content: tag.innerHTML
-            }
+            })
+        }
 }
 
+/**
+ * @param {String}   URI
+ * @param {String[]} [selector]
+ *
+ * @return {Page} https://github.com/GoogleChrome/puppeteer/blob/v1.7.0/docs/api.md#class-page
+ */
 export async function bootPage(URI, selector) {
     if (executablePath) {
         browser = browser || (await Puppeteer.launch({ executablePath }))
@@ -57,6 +84,10 @@ export async function bootPage(URI, selector) {
     return page
 }
 
+/**
+ * @param {String} URI
+ * @param {String} [selector]
+ */
 export async function migratePage(URI, selector) {
     selector = selector ? [selector].concat(body_tag) : body_tag
 
@@ -64,31 +95,30 @@ export async function migratePage(URI, selector) {
             URI,
             selector[1] ? selector.slice(0, -1) : selector
         ),
-        data,
-        title,
-        content
+        data
 
     if (!page) {
         document = (await JSDOM.fromURL(URI)).window.document
 
-        data = await fetchPage(selector)
+        data = await fetchPage(selector, meta_tag)
     } else {
-        data = await page.evaluate(fetchPage, selector)
+        data = await page.evaluate(fetchPage, selector, meta_tag)
 
         await browser.close()
     }
 
-    (title = data.title), (content = data.content)
+    const meta = { ...data }
+
+    delete meta.content
+    meta.date = meta.date || new Date().toJSON()
 
     return {
-        title,
-        name: title.replace(/\s+/g, '-'),
-        html: content,
+        name: data.title.replace(/\s+/g, '-'),
+        categories: data.categories || [],
         markdown: `---
-title: ${title}
-date: ${new Date().toJSON()}
+${stringify(meta).trim()}
 ---
 
-${convertor.turndown(content)}`
+${convertor.turndown(data.content)}`
     }
 }

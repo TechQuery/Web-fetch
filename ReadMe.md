@@ -14,6 +14,10 @@ npm install hexo-migrator-web
 hexo migrate web http://URL.to/one/of/your/old/posts/
 ```
 
+## Supported Structure
+
+https://github.com/TechQuery/hexo-migrator-web/blob/master/source/utility.js#L12
+
 ## Renderer
 
 1. [Puppeteer](https://pptr.dev/) (default)
