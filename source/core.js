@@ -1,8 +1,13 @@
+import { getNPMConfig } from '@tech_query/node-toolkit'
+
 import { JSDOM } from 'jsdom'
+
+import Puppeteer from 'puppeteer-core'
 
 import TurnDown from 'turndown'
 
-const convertor = new TurnDown({
+const executablePath = getNPMConfig('chrome'),
+    convertor = new TurnDown({
         headingStyle: 'atx',
         hr: '---',
         bulletListMarker: '-',
@@ -19,24 +24,61 @@ const convertor = new TurnDown({
         'body'
     ]
 
-export async function fetchPage(URI, selector) {
-    const {
-        window: { document }
-    } = await JSDOM.fromURL(URI)
+var document, browser, page
 
-    for (let tag of [selector].concat(body_tag))
-        if (tag && (tag = document.querySelector(tag)))
+export function fetchPage(selector) {
+    var tag
+
+    while ((tag = selector.shift()))
+        if ((tag = document.querySelector(tag)))
             return {
                 title: (
                     (tag.querySelector('h1') || document.querySelector('h1'))
                         .textContent || document.title
                 ).trim(),
-                content: tag
+                content: tag.innerHTML
             }
 }
 
-export async function postOf(URI, selector) {
-    const { title, content } = await fetchPage(URI, selector)
+export async function bootPage(URI, selector) {
+    if (executablePath) {
+        browser = browser || (await Puppeteer.launch({ executablePath }))
+
+        page = page || (await browser.pages())[0]
+
+        await page.goto(URI)
+
+        if (selector)
+            await page.waitFor(
+                selector.map(item => `${item}:not(:empty)`) + ''
+            )
+    }
+
+    return page
+}
+
+export async function migratePage(URI, selector) {
+    selector = selector ? [selector].concat(body_tag) : body_tag
+
+    var page = await bootPage(
+            URI,
+            selector[1] ? selector.slice(0, -1) : selector
+        ),
+        data,
+        title,
+        content
+
+    if (!page) {
+        document = (await JSDOM.fromURL(URI)).window.document
+
+        data = await fetchPage(selector)
+    } else {
+        data = await page.evaluate(fetchPage, selector)
+
+        await browser.close()
+    }
+
+    (title = data.title), (content = data.content)
 
     return {
         title,
