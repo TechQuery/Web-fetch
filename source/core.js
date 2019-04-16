@@ -1,12 +1,15 @@
-import { getNPMConfig } from '@tech_query/node-toolkit';
-
-import TurnDown from 'turndown';
+import {
+    executablePath,
+    convertor,
+    body_tag,
+    meta_tag,
+    convertMedia,
+    uniqueID
+} from './utility';
 
 import Puppeteer from 'puppeteer-core';
 
 import { JSDOM } from 'jsdom';
-
-import { body_tag, meta_tag, convertMedia, uniqueID } from './utility';
 
 import fetch from 'node-fetch';
 
@@ -17,15 +20,6 @@ import { stringify } from 'yaml';
 import { join } from 'path';
 
 import { outputFile } from 'fs-extra';
-
-const executablePath = getNPMConfig('chrome'),
-    convertor = new TurnDown({
-        headingStyle: 'atx',
-        hr: '---',
-        bulletListMarker: '-',
-        codeBlockStyle: 'fenced',
-        linkStyle: 'referenced'
-    });
 
 var document,
     browser,
@@ -192,4 +186,5 @@ export default async function(URI, selector) {
 
     console.info('--------------------');
     console.timeEnd('Migrate');
+    console.info('');
 }

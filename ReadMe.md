@@ -8,10 +8,25 @@
 
 ## Usage
 
-```shell
-npm install hexo-migrator-web
+### Basic
 
+```shell
 hexo migrate web http://URL.to/one/of/your/old/posts/
+```
+
+### Advanced
+
+Create `task-list.txt`
+
+```
+http://URL.to/your/old/posts/1/
+http://URL.to/your/old/posts/2/
+```
+
+then execute
+
+```shell
+hexo migrate web ./task-list.txt
 ```
 
 ## Supported Structure

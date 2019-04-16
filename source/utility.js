@@ -1,8 +1,32 @@
+import { getNPMConfig } from '@tech_query/node-toolkit';
+
+import TurnDown from 'turndown';
+
+import { gfm } from 'turndown-plugin-gfm';
+
 import { JSDOM } from 'jsdom';
 
 import { URL } from 'url';
 
 import { parse } from 'path';
+
+export const executablePath = getNPMConfig('chrome');
+
+export const convertor = new TurnDown({
+    headingStyle: 'atx',
+    hr: '---',
+    bulletListMarker: '-',
+    codeBlockStyle: 'fenced',
+    linkStyle: 'referenced'
+});
+
+convertor.use(gfm);
+
+convertor.addRule('asset_image', {
+    filter: ['img'],
+    replacement: (_, node) =>
+        `{% asset_img ${node.getAttribute('src')} ${node.title || node.alt} %}`
+});
 
 const attribute_key = {
     '#': 'id',

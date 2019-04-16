@@ -1,6 +1,6 @@
 {
     "name": "hexo-migrator-web",
-    "version": "0.4.0",
+    "version": "0.4.2",
     "description": "Hexo Migrator plugin for common Web pages",
     "keywords": [
         "hexo",
@@ -20,7 +20,7 @@
     },
     "main": "dist/index.js",
     "engines": {
-        "node": "^6.3.0"
+        "node": "^6.13.0"
     },
     "scripts": {
         "format": "prettier --write \"{,!(node_modules|.git|dist|docs)/**/}*.{html,md,css,less,js,json,yml,yaml}\"",
@@ -46,6 +46,7 @@
         "node-fetch": "^2.3.0",
         "puppeteer-core": "1.7.0",
         "turndown": "^5.0.3",
+        "turndown-plugin-gfm": "^1.0.2",
         "yaml": "^1.5.0"
     },
     "peerDependencies": {
@@ -66,7 +67,7 @@
                 "@babel/preset-env",
                 {
                     "targets": {
-                        "node": "6.3.0"
+                        "node": "6.13.0"
                     }
                 }
             ]
