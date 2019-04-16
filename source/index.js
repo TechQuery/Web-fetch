@@ -1,24 +1,7 @@
-require('@babel/polyfill')
+require('@babel/polyfill');
 
-const { migratePage } = require('./core'),
-    { join } = require('path'),
-    { outputFile } = require('fs-extra')
+const command = require('./core').default;
 
-function command(URI, selector) {
-    var file
-
-    return migratePage(URI, selector)
-        .then(({ categories, name, markdown }) => {
-            file = join('source/_posts', categories.join('/'), `${name}.md`)
-
-            return outputFile(file, markdown)
-        })
-        .then(() =>
-            console.info(`[Migrated]
-    ${URI}
-  ->
-    ${file}`)
-        )
-}
-
-hexo.extend.migrator.register('web', ({ _ }) => command(..._))
+hexo.extend.migrator.register('web', ({ _ }) =>
+    command(..._).then(() => process.exit())
+);

@@ -20,7 +20,7 @@
         ],
         "linebreak-style": ["error", "unix"],
         "quotes": ["error", "single"],
-        "semi": ["error", "never"],
+        "semi": ["error", "always"],
         "no-cond-assign": "off",
         "getter-return": "warn",
         "no-console": [
