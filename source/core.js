@@ -4,14 +4,20 @@ import {
     body_tag,
     meta_tag,
     convertMedia,
-    uniqueID
+    fileNameOf
 } from './utility';
+
+import { blobFrom, uniqueID } from '@tech_query/node-toolkit';
 
 import Puppeteer from 'puppeteer-core';
 
 import { JSDOM } from 'jsdom';
 
+import { parse } from 'url';
+
 import fetch from 'node-fetch';
+
+import scrollToEnd from 'puppeteer-autoscroll-down';
 
 import fileType from 'file-type';
 
@@ -19,7 +25,7 @@ import { stringify } from 'yaml';
 
 import { join } from 'path';
 
-import { outputFile } from 'fs-extra';
+import { existsSync, outputFile } from 'fs-extra';
 
 var document,
     browser,
@@ -56,11 +62,16 @@ export function fetchPage(selector, meta) {
                 if (!_meta_[key][1]) _meta_[key] = _meta_[key][0] || '';
             }
 
+            var { title } = _meta_;
+
+            if (!title) {
+                title = document.title.split(/\s+-\s+/);
+
+                title = title[1] ? title.slice(0, -1).join(' - ') : title[0];
+            }
+
             return Object.assign(_meta_, {
-                title: (
-                    (tag.querySelector('h1') || document.querySelector('h1'))
-                        .textContent || document.title
-                ).trim(),
+                title,
                 content: tag.innerHTML,
                 media: Array.from(
                     document.querySelectorAll('img[src]'),
@@ -80,8 +91,14 @@ async function evaluate(URI, selector) {
     const data = await fetchPage(selector, meta_tag);
 
     for (let item of data.media)
-        if (/^http/.test(item))
-            resource[item] = await (await fetch(item)).buffer();
+        switch (parse(item).protocol) {
+            case 'http':
+            case 'https':
+                resource[item] = await (await fetch(item)).buffer();
+                break;
+            case 'data':
+                resource[item] = blobFrom(item).data;
+        }
 
     return data;
 }
@@ -93,24 +110,31 @@ async function evaluate(URI, selector) {
  * @return {Page} https://github.com/GoogleChrome/puppeteer/blob/v1.7.0/docs/api.md#class-page
  */
 export async function bootPage(URI, selector) {
-    if (executablePath) {
-        browser = browser || (await Puppeteer.launch({ executablePath }));
+    if (!executablePath) return page;
 
-        page = page || (await browser.pages())[0];
+    browser = browser || (await Puppeteer.launch({ executablePath }));
 
-        page.on(
-            'response',
-            async response =>
-                (resource[response.url()] = await response.buffer())
-        );
+    page = page || (await browser.pages())[0];
 
-        await page.goto(URI);
+    page.on('response', async response => {
+        if (response.status() < 300)
+            resource[response.url()] = await response.buffer();
+    });
 
-        if (selector)
+    await page.goto(URI);
+
+    await scrollToEnd(page);
+
+    if (selector)
+        try {
             await page.waitFor(
                 selector.map(item => `${item}:not(:empty)`) + ''
             );
-    }
+        } catch (error) {
+            console.warn(error.message);
+
+            await page.waitFor('body:not(:empty)');
+        }
 
     return page;
 }
@@ -135,12 +159,16 @@ export async function migratePage(URI, selector) {
 
     Object.assign(
         data,
-        convertMedia(URI, data.content, (URI, { ext, base }) => {
-            var type = (fileType(resource[URI]) || '').mime;
+        convertMedia(URI, data.content, (URI, path) => {
+            if (!resource[URI]) return;
 
-            type = (type || '').split('/')[1];
+            var { mime } = fileType(resource[URI]);
 
-            return type === ext ? base : `${uniqueID()}.${type}`;
+            mime = (mime || '').split('/')[1];
+
+            return path.ext && mime === path.ext
+                ? path.base
+                : `${uniqueID()}.${mime}`;
         })
     );
 
@@ -151,7 +179,7 @@ export async function migratePage(URI, selector) {
     meta.date = meta.date || new Date().toJSON();
 
     return {
-        name: data.title.replace(/\s+/g, '-'),
+        name: fileNameOf(data.title),
         categories: data.categories || [],
         markdown: `---
 ${stringify(meta).trim()}
@@ -171,12 +199,16 @@ export default async function(URI, selector) {
         selector
     );
 
-    const path = join('source/_posts', categories.join('/'), name),
+    var path = join('source/_posts', categories.join('/'), name),
         files = [];
+
+    if (existsSync(path)) path += '-' + uniqueID();
 
     files.push([`${path}.md`, markdown]);
 
-    media.forEach(([name, data]) => files.push([`${path}/${name}`, data]));
+    media.forEach(
+        ([name, data]) => data.length && files.push([`${path}/${name}`, data])
+    );
 
     for (let [file, data] of files) {
         await outputFile(file, data);

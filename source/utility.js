@@ -6,9 +6,9 @@ import { gfm } from 'turndown-plugin-gfm';
 
 import { JSDOM } from 'jsdom';
 
-import { URL } from 'url';
+import URL from 'url';
 
-import { parse } from 'path';
+import Path from 'path';
 
 export const executablePath = getNPMConfig('chrome');
 
@@ -20,13 +20,32 @@ export const convertor = new TurnDown({
     linkStyle: 'referenced'
 });
 
-convertor.use(gfm);
+convertor
+    .use(gfm)
+    .addRule('non_url', {
+        filter(node) {
+            return (
+                ['a', 'area'].includes(node.nodeName.toLowerCase()) &&
+                /^javascript:/.test(node.getAttribute('href'))
+            );
+        },
+        replacement: (content, node) => content.trim() || node.title.trim()
+    })
+    .addRule('asset_image', {
+        filter: ['img'],
+        replacement(_, node) {
+            const path = node.getAttribute('src'),
+                title = node.title || node.alt;
 
-convertor.addRule('asset_image', {
-    filter: ['img'],
-    replacement: (_, node) =>
-        `{% asset_img ${node.getAttribute('src')} ${node.title || node.alt} %}`
-});
+            return /^http/.test(path)
+                ? `![${title}](${path} '${title}')`
+                : `{% asset_img ${path} ${title} %}`;
+        }
+    })
+    .addRule('asset_code', {
+        filter: ['style', 'script'],
+        replacement: () => ''
+    });
 
 const attribute_key = {
     '#': 'id',
@@ -52,18 +71,21 @@ export const body_tag = [
 ];
 
 export const meta_tag = {
+    title: ['h1', 'h2', '.title'].map(likeOf),
     authors: ['.author', '.publisher', '.creator', '.editor'].map(likeOf),
-    date: ['.date', '.publish', '.create'].map(likeOf),
+    date: ['.date', '.time', '.publish', '.create'].map(likeOf),
     updated: ['.update', '.edit', '.modif'].map(likeOf),
     categories: ['.breadcrumb', '.categor'].map(likeOf),
     tags: ['.tag', '.label'].map(likeOf)
 };
 
 /**
+ * @param {String} raw
+ *
  * @return {String}
  */
-export function uniqueID() {
-    return parseInt((Math.random() + '').slice(2)).toString(36);
+export function fileNameOf(raw) {
+    return raw.replace(/[/\\:*?'"<>|.#\s]+/g, '-');
 }
 
 /**
@@ -80,13 +102,19 @@ export function convertMedia(URI, HTML, mapper) {
 
     return {
         media: Array.from(document.querySelectorAll('img[src]'), item => {
-            const URI = item.src;
+            const { protocol, pathname, href } = URL.parse(item.src);
 
-            return {
-                URI,
-                path: (item.src = mapper(URI, parse(new URL(URI).pathname)))
-            };
-        }),
+            var path =
+                protocol === 'http' || protocol === 'https'
+                    ? Path.parse(pathname)
+                    : href;
+
+            if ((path = mapper(href, path)))
+                return {
+                    URI: href,
+                    path: (item.src = path)
+                };
+        }).filter(Boolean),
         content: document.body.innerHTML
     };
 }
