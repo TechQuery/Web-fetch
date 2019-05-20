@@ -89,6 +89,33 @@ export function fileNameOf(raw) {
 }
 
 /**
+ * @this {Window}
+ *
+ * @param {Element} [root=document.body]
+ */
+export function removeHidden(root = this.document.body) {
+    const hidden = [];
+
+    const walker = this.document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_ELEMENT,
+        {
+            acceptNode(node) {
+                const { display, visibility } = self.getComputedStyle(node);
+
+                return display === 'none' || visibility === 'hidden'
+                    ? (hidden.push(node), NodeFilter.FILTER_REJECT)
+                    : NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
+
+    while (walker.nextNode());
+
+    hidden.forEach(node => node.remove());
+}
+
+/**
  * @param {String}                                      URI
  * @param {String}                                      HTML
  * @param {function(URI: String, path: Object): String} mapper

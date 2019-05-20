@@ -3,6 +3,7 @@ import {
     convertor,
     body_tag,
     meta_tag,
+    removeHidden,
     convertMedia,
     fileNameOf
 } from './utility';
@@ -27,12 +28,15 @@ import { join } from 'path';
 
 import { existsSync, outputFile } from 'fs-extra';
 
-var document,
-    browser,
+var browser,
     page,
-    resource = {};
+    resource = {},
+    userAgent =
+        'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)';
 
 /**
+ * @this {Window}
+ *
  * @param {String[]} selector
  * @param {?Object}  meta
  * @param {String[]} meta.authors
@@ -44,7 +48,8 @@ var document,
  * @return {Object}
  */
 export function fetchPage(selector, meta) {
-    var tag;
+    var { document } = this,
+        tag;
 
     while ((tag = selector.shift()))
         if ((tag = document.querySelector(tag))) {
@@ -82,13 +87,16 @@ export function fetchPage(selector, meta) {
 }
 
 async function evaluate(URI, selector) {
-    document = (await JSDOM.fromURL(URI, {
+    const { window } = await JSDOM.fromURL(URI, {
         pretendToBeVisual: true,
         resources: 'usable',
-        runScripts: 'dangerously'
-    })).window.document;
+        runScripts: 'dangerously',
+        userAgent
+    });
 
-    const data = await fetchPage(selector, meta_tag);
+    removeHidden.call(window);
+
+    const data = fetchPage.call(window, selector, meta_tag);
 
     for (let item of data.media)
         switch (parse(item).protocol) {
@@ -115,6 +123,8 @@ export async function bootPage(URI, selector) {
     browser = browser || (await Puppeteer.launch({ executablePath }));
 
     page = page || (await browser.pages())[0];
+
+    page.setUserAgent(userAgent);
 
     page.on('response', async response => {
         if (response.status() < 300)
@@ -148,14 +158,17 @@ export async function bootPage(URI, selector) {
 export async function migratePage(URI, selector) {
     selector = selector ? [selector].concat(body_tag) : body_tag;
 
-    const page = await bootPage(
-        URI,
-        selector[1] ? selector.slice(0, -1) : selector
-    );
+    var page = await bootPage(
+            URI,
+            selector[1] ? selector.slice(0, -1) : selector
+        ),
+        data;
 
-    const data = await (page
-        ? page.evaluate(fetchPage, selector, meta_tag)
-        : evaluate(URI, selector));
+    if (page) {
+        await page.evaluate(removeHidden);
+
+        data = await page.evaluate(fetchPage, selector, meta_tag);
+    } else data = await evaluate(URI, selector);
 
     Object.assign(
         data,
