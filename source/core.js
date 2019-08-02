@@ -119,12 +119,13 @@ async function evaluate(URI, selector) {
  */
 export async function bootPage(URI, selector) {
     if (!executablePath) return page;
-
+    /* eslint-disable */
     browser = browser || (await Puppeteer.launch({ executablePath }));
 
     page = page || (await browser.pages())[0];
-
+    /* eslint-enable */
     page.setUserAgent(userAgent);
+    page.setDefaultNavigationTimeout(0);
 
     page.on('response', async response => {
         if (response.status() < 300)

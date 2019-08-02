@@ -31,7 +31,7 @@ hexo migrate web ./task-list.txt
 
 ## Supported Structure
 
-https://github.com/TechQuery/hexo-migrator-web/blob/master/source/utility.js#L42
+https://github.com/TechQuery/hexo-migrator-web/blob/master/source/utility.js#L60
 
 ## Renderer
 

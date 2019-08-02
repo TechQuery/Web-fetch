@@ -12,6 +12,8 @@ import Path from 'path';
 
 export const executablePath = getNPMConfig('chrome');
 
+export const Empty_URL = /^(#+|javascript:\s*void\(0\);?\s*)$/;
+
 export const convertor = new TurnDown({
     headingStyle: 'atx',
     hr: '---',
@@ -23,12 +25,9 @@ export const convertor = new TurnDown({
 convertor
     .use(gfm)
     .addRule('non_url', {
-        filter(node) {
-            return (
-                ['a', 'area'].includes(node.nodeName.toLowerCase()) &&
-                /^javascript:/.test(node.getAttribute('href'))
-            );
-        },
+        filter: node =>
+            ['a', 'area'].includes(node.nodeName.toLowerCase()) &&
+            Empty_URL.test(node.getAttribute('href')),
         replacement: (content, node) => content.trim() || node.title.trim()
     })
     .addRule('asset_image', {
