@@ -1,6 +1,6 @@
 {
     "name": "hexo-migrator-web",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "description": "Hexo Migrator plugin for common Web pages",
     "keywords": [
         "hexo",

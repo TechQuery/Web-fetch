@@ -134,7 +134,7 @@ export async function bootPage(URI, selector) {
 
     await page.goto(URI);
 
-    await scrollToEnd(page);
+    await scrollToEnd(page, 250, 1000);
 
     if (selector)
         try {

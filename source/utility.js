@@ -34,11 +34,15 @@ convertor
         filter: ['img'],
         replacement(_, node) {
             const path = node.getAttribute('src'),
-                title = node.title || node.alt;
+                title = (node.title || node.alt).trim();
 
-            return /^http/.test(path)
+            const code = /^http/.test(path)
                 ? `![${title}](${path} '${title}')`
                 : `{% asset_img ${path} ${title} %}`;
+
+            return title
+                ? `<figure>\n${code}\n  <figcaption>${title}</figcaption>\n</figure>`
+                : code;
         }
     })
     .addRule('asset_code', {
