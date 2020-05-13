@@ -1,6 +1,6 @@
 {
     "name": "hexo-migrator-web",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Hexo Migrator plugin for common Web pages",
     "keywords": [
         "hexo",
@@ -10,7 +10,7 @@
     ],
     "license": "GPL-3.0",
     "author": "shiy2008@gmail.com",
-    "homepage": "https://github.com/TechQuery/hexo-migrator-web#readme",
+    "homepage": "https://tech-query.me/hexo-migrator-web/",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/TechQuery/hexo-migrator-web.git"
@@ -24,9 +24,10 @@
     },
     "scripts": {
         "test": "lint-staged",
-        "build": "rm -rf dist/  &&  tsc",
+        "build": "rm -rf dist/  &&  tsc  &&  typedoc",
         "prepublishOnly": "npm test  &&  npm run build",
-        "install": "app-find chrome -c"
+        "install": "app-find chrome -c",
+        "start": "typedoc  &&  open-cli docs/index.html"
     },
     "husky": {
         "hooks": {
@@ -70,7 +71,9 @@
         "eslint": "^7.0.0",
         "husky": "^4.2.5",
         "lint-staged": "^10.2.2",
+        "open-cli": "^6.0.1",
         "prettier": "^2.0.5",
+        "typedoc": "^0.17.6",
         "typescript": "^3.9.2"
     },
     "prettier": {

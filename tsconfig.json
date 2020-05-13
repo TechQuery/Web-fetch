@@ -8,5 +8,13 @@
         "moduleResolution": "Node",
         "esModuleInterop": true,
         "lib": ["ES2020", "DOM"]
+    },
+    "typedocOptions": {
+        "name": "Hexo Web migrator",
+        "mode": "file",
+        "excludeExternals": true,
+        "excludeNotExported": true,
+        "readme": "./ReadMe.md",
+        "out": "docs/"
     }
 }

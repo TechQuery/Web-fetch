@@ -1,40 +1,36 @@
-# Hexo Migrator for Web
+# Hexo Web migrator
 
 [Hexo](https://hexo.io/) Migrator plugin for common Web pages
 
-[![NPM Dependency](https://david-dm.org/TechQuery/hexo-migrator-web.svg)](https://david-dm.org/TechQuery/hexo-migrator-web)
+[![NPM Dependency](https://david-dm.org/TechQuery/hexo-migrator-web.svg)][1]
+[![Build Status](https://travis-ci.com/TechQuery/hexo-migrator-web.svg?branch=master)][2]
 
-[![NPM](https://nodei.co/npm/hexo-migrator-web.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/hexo-migrator-web/)
+[![NPM](https://nodei.co/npm/hexo-migrator-web.png?downloads=true&downloadRank=true&stars=true)][3]
 
 ## Usage
 
-### Basic
+### As a Hexo plugin
 
 ```shell
 hexo migrate web http://URL.to/one/of/your/old/posts/
 ```
 
-### Advanced
-
-Create `task-list.txt`
-
-```
-http://URL.to/your/old/posts/1/
-http://URL.to/your/old/posts/2/
-```
-
-then execute
+### As a Command Line tool
 
 ```shell
-hexo migrate web ./task-list.txt
+web-fetch http://URL.to/one/of/your/old/posts/
 ```
 
 ## Supported Structure
 
-https://github.com/TechQuery/hexo-migrator-web/blob/master/source/utility.js#L60
+https://github.com/TechQuery/hexo-migrator-web/blob/master/source/config.ts#L10-L29
 
 ## Renderer
 
 1. [Puppeteer](https://pptr.dev/) (default)
 
 2. [JSDOM](https://github.com/jsdom/jsdom)
+
+[1]: https://david-dm.org/TechQuery/hexo-migrator-web
+[2]: https://travis-ci.com/TechQuery/hexo-migrator-web
+[3]: https://nodei.co/npm/hexo-migrator-web/
