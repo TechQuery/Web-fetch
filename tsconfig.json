@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "rootDir": "source/",
+        "outDir": "dist/",
+        "declaration": true,
+        "target": "ES2017",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "lib": ["ES2020", "DOM"]
+    }
+}
