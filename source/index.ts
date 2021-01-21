@@ -5,13 +5,12 @@ import { savePage } from './loader';
 
 convertor.addRule('asset_image', {
     filter: ['img'],
-    replacement(_, node: HTMLImageElement) {
-        const path = node.getAttribute('src'),
-            title = (node.title || node.alt).trim();
+    replacement(_, { src, title, alt }: HTMLImageElement) {
+        title = (title || alt).trim();
 
-        const code = path.startsWith('http')
-            ? `![${title}](${path} '${title}')`
-            : `{% asset_img ${basename(path)} ${title} %}`;
+        const code = src.startsWith('http')
+            ? `![${title}](${src} '${title}')`
+            : `{% asset_img ${basename(src)} ${title} %}`;
 
         return title
             ? `<figure>\n${code}\n  <figcaption>${title}</figcaption>\n</figure>`

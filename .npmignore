@@ -2,5 +2,4 @@
 .eslintrc.json
 test/
 docs/
-.travis.yml
-.github
+.github/

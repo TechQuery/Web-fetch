@@ -48,7 +48,7 @@ export async function loadPage(URI: string, root_selector = 'body') {
     page = page || (await createPage());
 
     await page.goto(URI);
-    await page.waitFor(`${root_selector}:not(:empty)`);
+    await page.waitForSelector(`${root_selector}:not(:empty)`);
 
     return new JSDOM(await page.content(), { url: URI });
 }
@@ -62,17 +62,21 @@ export async function fetchMedia(root: HTMLElement, root_path = '') {
     const list = Array.from(
         root.querySelectorAll<HTMLMediaElement>('img, audio, video'),
         async media => {
-            const { pathname, protocol, href } = sourcePathOf(media);
+            try {
+                var { pathname, protocol, href } = sourcePathOf(media);
+            } catch {
+                media.remove();
+            }
 
             if (protocol === 'data:') {
                 const { data } = await blobFrom(href);
 
                 return {
-                    name: media.src = await createFilePath(
+                    name: (media.src = await createFilePath(
                         data,
                         pathname,
                         root_path
-                    ),
+                    )),
                     data
                 };
             }
@@ -82,11 +86,11 @@ export async function fetchMedia(root: HTMLElement, root_path = '') {
                 ).buffer();
 
                 return {
-                    name: media.src = await createFilePath(
+                    name: (media.src = await createFilePath(
                         data,
                         pathname,
                         root_path
-                    ),
+                    )),
                     data
                 };
             } catch (error) {
@@ -102,9 +106,11 @@ export async function fetchMedia(root: HTMLElement, root_path = '') {
         .filter(Boolean);
 }
 
-export type PageData = {
-    [key in keyof typeof meta_tag]?: string | string[];
-} & { content: string; media: MediaItem[] };
+export interface PageData
+    extends Partial<Record<keyof typeof meta_tag, string | string[]>> {
+    content: string;
+    media: MediaItem[];
+}
 
 export async function fetchPage(
     URI: string,
@@ -132,7 +138,7 @@ export async function fetchPage(
 export async function savePage(
     URI: string,
     root_selector?: string,
-    root = process.cwd()
+    CWD = process.cwd()
 ) {
     console.time('Fetch');
 
@@ -144,7 +150,7 @@ export async function savePage(
     const text_file = join(root_path, fileNameOf(meta.title as string) + '.md');
 
     await outputFile(
-        join(root, text_file),
+        join(CWD, text_file),
         `---
 ${stringify(meta)}
 ---
@@ -156,7 +162,7 @@ ${content}`
     for (const { name, data } of media) {
         const media_file = join(root_path, name);
 
-        await outputFile(media_file, data);
+        await outputFile(join(CWD, media_file), data);
 
         console.log('[save] ' + media_file);
     }

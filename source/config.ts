@@ -20,7 +20,7 @@ export const body_tag = [
 ];
 
 export const meta_tag = {
-    title: ['h1', 'h2', '.title'].map(likeOf),
+    title: ['h1', 'h2', '.title', 'title'].map(likeOf),
     authors: ['.author', '.publisher', '.creator', '.editor'].map(likeOf),
     date: ['.date', '.time', '.publish', '.create'].map(likeOf),
     updated: ['.update', '.edit', '.modif'].map(likeOf),

@@ -3,7 +3,7 @@
 [Hexo](https://hexo.io/) Migrator plugin for common Web pages
 
 [![NPM Dependency](https://david-dm.org/TechQuery/hexo-migrator-web.svg)][1]
-[![Build Status](https://travis-ci.com/TechQuery/hexo-migrator-web.svg?branch=master)][2]
+[![CI & CD](https://github.com/TechQuery/hexo-migrator-web/workflows/CI%20&%20CD/badge.svg)][2]
 
 [![NPM](https://nodei.co/npm/hexo-migrator-web.png?downloads=true&downloadRank=true&stars=true)][3]
 
@@ -32,5 +32,5 @@ https://github.com/TechQuery/hexo-migrator-web/blob/master/source/config.ts#L10-
 2. [JSDOM](https://github.com/jsdom/jsdom)
 
 [1]: https://david-dm.org/TechQuery/hexo-migrator-web
-[2]: https://travis-ci.com/TechQuery/hexo-migrator-web
+[2]: https://github.com/TechQuery/hexo-migrator-web/actions
 [3]: https://nodei.co/npm/hexo-migrator-web/

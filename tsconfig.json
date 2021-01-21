@@ -11,9 +11,8 @@
     },
     "typedocOptions": {
         "name": "Hexo Web migrator",
-        "mode": "file",
         "excludeExternals": true,
-        "excludeNotExported": true,
+        "excludePrivate": true,
         "readme": "./ReadMe.md",
         "out": "docs/"
     }

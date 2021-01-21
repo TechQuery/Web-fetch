@@ -10,7 +10,7 @@ const attribute_key = {
 };
 
 export function likeOf(selector: string) {
-    const key = attribute_key[selector[0]];
+    const key = attribute_key[selector[0] as keyof typeof attribute_key];
 
     return key ? `[${key}*="${selector.slice(1)}" i]` : selector;
 }
@@ -80,14 +80,6 @@ convertor
         ],
         replacement: () => ''
     })
-    .addRule('hidden', {
-        filter: node => {
-            const { width, height } = node.getBoundingClientRect();
-
-            return !!(width && height);
-        },
-        replacement: () => ''
-    })
     .addRule('non_url', {
         filter: node =>
             ['a', 'area'].includes(node.nodeName.toLowerCase()) &&
@@ -99,12 +91,18 @@ export function fileNameOf(raw: string) {
     return raw.replace(/[/\\:*?'"<>|.#\s]+/g, '-');
 }
 
-export async function createFileName(data: Buffer) {
-    const { ext } = (await fromBuffer(data)) || {};
+export function parseFileName(path: string) {
+    const name_parts = path
+        .split('/')
+        .filter(Boolean)
+        .slice(-1)[0]
+        .split('.')
+        .filter(Boolean);
 
-    if (!ext) throw TypeError('Unknown File Type');
-
-    return `${uniqueID()}.${ext}`;
+    return {
+        base: name_parts.slice(0, -1).join('.'),
+        ext: name_parts[1] && name_parts.slice(-1)[0].match(/^\w+/)[0]
+    };
 }
 
 export async function createFilePath(
@@ -112,10 +110,12 @@ export async function createFilePath(
     raw_path: string,
     target_root = ''
 ) {
-    const { base, ext } = parse(raw_path);
+    const { base, ext } = parseFileName(raw_path);
 
-    return join(target_root, ext ? base : await createFileName(data)).replace(
-        /\\+/g,
-        '/'
-    );
+    const type = ext || (await fromBuffer(data))?.ext;
+    let name = base || uniqueID();
+
+    if (type) name += `.${type}`;
+
+    return join(target_root, decodeURI(name)).replace(/\\+/g, '/');
 }
