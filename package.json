@@ -1,6 +1,6 @@
 {
     "name": "hexo-migrator-web",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "description": "Hexo Migrator plugin for common Web pages",
     "keywords": [
         "hexo",
@@ -23,6 +23,7 @@
         "web-fetch": "dist/command.js"
     },
     "scripts": {
+        "prepare": "husky install",
         "test": "lint-staged",
         "debug": "rm -rf test/  &&  mkdir test  &&  cd test/  &&  ts-node ../source/command.ts",
         "build": "rm -rf dist/  &&  tsc  &&  typedoc source/",
