@@ -1,4 +1,4 @@
-import { Browser, launch, Page } from 'puppeteer-core';
+import Puppeteer, { Browser, Page } from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
 import { join } from 'path';
@@ -18,7 +18,7 @@ import {
 let browser: Browser;
 
 export async function createPage() {
-    browser = browser || (await launch({ executablePath }));
+    browser = browser || (await Puppeteer.launch({ executablePath }));
 
     const page = (await browser.pages())[0] || (await browser.newPage());
 
@@ -28,11 +28,12 @@ export async function createPage() {
     ]);
     page.setDefaultNavigationTimeout(0);
 
-    return page.on('request', request => {
+    page.on('request', request => {
         if (['image', 'media'].includes(request.resourceType()))
             request.abort();
         else request.continue();
     });
+    return page;
 }
 
 let page: Page;
