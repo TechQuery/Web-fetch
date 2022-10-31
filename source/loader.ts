@@ -1,7 +1,8 @@
-import Puppeteer, { Browser, Page } from 'puppeteer-core';
+import memoize from 'lodash.memoize';
+import Puppeteer, { Page } from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
-import { join } from 'path';
+import { join, parse } from 'path';
 import { blobFrom } from '@tech_query/node-toolkit';
 import { stringify } from 'yaml';
 import { outputFile } from 'fs-extra';
@@ -15,12 +16,9 @@ import {
     createFilePath
 } from './parser';
 
-let browser: Browser;
-
-export async function createPage() {
-    browser = browser || (await Puppeteer.launch({ executablePath }));
-
-    const page = (await browser.pages())[0] || (await browser.newPage());
+export const getPage: () => Promise<Page> = memoize(async () => {
+    const browser = await Puppeteer.launch({ executablePath });
+    const page = await browser.newPage();
 
     await Promise.all([
         page.setRequestInterception(true),
@@ -34,9 +32,7 @@ export async function createPage() {
         else request.continue();
     });
     return page;
-}
-
-let page: Page;
+});
 
 export async function loadPage(URI: string, root_selector = 'body') {
     if (!executablePath)
@@ -46,7 +42,7 @@ export async function loadPage(URI: string, root_selector = 'body') {
             runScripts: 'outside-only'
         });
 
-    page = page || (await createPage());
+    const page = await getPage();
 
     await page.goto(URI);
     await page.waitForSelector(`${root_selector}:not(:empty)`);
@@ -69,42 +65,28 @@ export async function fetchMedia(root: HTMLElement, root_path = '') {
                 media.remove();
             }
 
-            if (protocol === 'data:') {
-                const { data } = await blobFrom(href);
-
-                return {
-                    name: (media.src = await createFilePath(
-                        data,
-                        pathname,
-                        root_path
-                    )),
-                    data
-                };
-            }
-            try {
-                const data = await (
+            if (protocol === 'data:') var { data } = await blobFrom(href);
+            else
+                var data = await (
                     await fetch(href, { headers: { 'User-Agent': userAgent } })
                 ).buffer();
 
-                return {
-                    name: (media.src = await createFilePath(
-                        data,
-                        pathname,
-                        root_path
-                    )),
-                    data
-                };
-            } catch (error) {
-                console.error(error);
-            }
+            const name = await createFilePath(data, pathname, root_path);
+
+            media.src = name;
+
+            if (media.style.display === 'none') media.style.display = '';
+
+            return { name, data };
         }
     );
     return (await Promise.allSettled(list))
-        .map(
-            ({ status, value }: PromiseFulfilledResult<MediaItem>) =>
-                status === 'fulfilled' && value
+        .map(result =>
+            result.status === 'fulfilled'
+                ? result.value
+                : console.error(result.reason)
         )
-        .filter(Boolean);
+        .filter(Boolean) as MediaItem[];
 }
 
 export interface PageData
@@ -127,43 +109,57 @@ export async function fetchPage(
         if (selector && (root = document.querySelector(selector))) break;
 
     const meta = parsePage(document, meta_tag),
-        media = await fetchMedia(root, fileNameOf(meta.title as string));
+        media = await fetchMedia(root, parse(URI).name);
 
-    return {
-        ...meta,
-        content: convertor.turndown(root.innerHTML),
-        media
-    };
+    for (const element of document.querySelectorAll(
+        'link, script, form, fieldset, legend, label, input, button'
+    ))
+        element.remove();
+
+    return { ...meta, content: root.innerHTML, media };
 }
 
-export async function savePage(
-    URI: string,
-    root_selector?: string,
-    CWD = process.cwd()
-) {
+export interface PageSaveOption {
+    source: string;
+    rootSelector?: string;
+    markdown?: boolean;
+    rootFolder?: string;
+}
+
+export async function savePage({
+    source,
+    rootSelector,
+    markdown,
+    rootFolder = process.cwd()
+}: PageSaveOption) {
     console.time('Fetch');
 
-    const { content, media, ...meta } = await fetchPage(URI, root_selector);
+    const { content, media, ...meta } = await fetchPage(source, rootSelector);
 
     const root_path = join(
+        rootFolder,
         ...((meta.categories as string[]) || []).map(fileNameOf)
     );
-    const text_file = join(root_path, fileNameOf(meta.title as string) + '.md');
-
-    await outputFile(
-        join(CWD, text_file),
-        `---
+    const text_file = join(
+            root_path,
+            `${fileNameOf(parse(source).name)}.${markdown ? 'md' : 'html'}`
+        ),
+        data = !markdown
+            ? content
+            : `---
 ${stringify(meta)}
 ---
 
-${content}`
-    );
+${convertor.turndown(content)}`;
+
+    await outputFile(text_file, data);
+
     console.log('[save] ' + text_file);
 
     for (const { name, data } of media) {
         const media_file = join(root_path, name);
 
-        await outputFile(join(CWD, media_file), data);
+        await outputFile(media_file, data);
 
         console.log('[save] ' + media_file);
     }

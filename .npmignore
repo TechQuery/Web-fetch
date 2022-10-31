@@ -4,3 +4,5 @@ test/
 docs/
 .github/
 .husky/
+.vscode/
+wrapper/

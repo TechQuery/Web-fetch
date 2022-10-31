@@ -1,18 +1,21 @@
-# Hexo Web migrator
+# Web fetch
 
-[Hexo](https://hexo.io/) Migrator plugin for common Web pages
+Asset Crawler for common Web pages
 
-[![NPM Dependency](https://david-dm.org/TechQuery/hexo-migrator-web.svg)][1]
-[![CI & CD](https://github.com/TechQuery/hexo-migrator-web/workflows/CI%20&%20CD/badge.svg)][2]
+[![CI & CD](https://github.com/TechQuery/Web-fetch/actions/workflows/main.yml/badge.svg)][2]
 
-[![NPM](https://nodei.co/npm/hexo-migrator-web.png?downloads=true&downloadRank=true&stars=true)][3]
+[![NPM](https://nodei.co/npm/web-fetch.png?downloads=true&downloadRank=true&stars=true)][3]
 
 ## Usage
 
-### As a Hexo plugin
+### As a Node.js package
 
-```shell
-hexo migrate web http://URL.to/one/of/your/old/posts/
+```javascript
+import { savePage } from 'web-fetch';
+
+savePage({
+    source: 'http://URL.to/one/of/your/old/posts/'
+});
 ```
 
 ### As a Command Line tool
@@ -23,7 +26,7 @@ web-fetch http://URL.to/one/of/your/old/posts/
 
 ## Supported Structure
 
-https://github.com/TechQuery/hexo-migrator-web/blob/master/source/config.ts#L10-L29
+https://github.com/TechQuery/Web-fetch/blob/master/source/config.ts#L10-L29
 
 ## Renderer
 
@@ -31,6 +34,9 @@ https://github.com/TechQuery/hexo-migrator-web/blob/master/source/config.ts#L10-
 
 2. [JSDOM](https://github.com/jsdom/jsdom)
 
-[1]: https://david-dm.org/TechQuery/hexo-migrator-web
-[2]: https://github.com/TechQuery/hexo-migrator-web/actions
-[3]: https://nodei.co/npm/hexo-migrator-web/
+## Wrapper
+
+1. [Hexo plugin](https://github.com/TechQuery/Web-fetch/tree/master/wrapper/Hexo/)
+
+[2]: https://github.com/TechQuery/Web-fetch/actions/workflows/main.yml
+[3]: https://nodei.co/npm/web-fetch/

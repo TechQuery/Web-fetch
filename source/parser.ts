@@ -1,8 +1,9 @@
+import 'array-unique-proposal';
 import TurnDown from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
 import { uniqueID } from '@tech_query/node-toolkit';
 import { fromBuffer } from 'file-type';
-import { parse, join } from 'path';
+import { join } from 'path';
 
 const attribute_key = {
     '#': 'id',
@@ -16,7 +17,7 @@ export function likeOf(selector: string) {
 }
 
 export function parsePage<T extends Record<string, string[]>>(
-    document: HTMLDocument,
+    document: Document,
     selectorMap: T
 ) {
     type MetaData = Record<keyof T, string | string[]>;
@@ -29,14 +30,12 @@ export function parsePage<T extends Record<string, string[]>>(
 
             if (!tags[0]) continue;
 
-            const value = [
-                ...new Set(
-                    Array.from(
-                        tags,
-                        tag => (tag.remove(), tag.textContent.trim())
-                    )
-                )
-            ].filter(Boolean);
+            const value = Array.from(
+                tags,
+                tag => (tag.remove(), tag.textContent.trim())
+            )
+                .uniqueBy()
+                .filter(Boolean);
 
             data[key] = key.endsWith('s') ? value : value[0];
             break;

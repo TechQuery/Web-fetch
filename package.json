@@ -1,23 +1,25 @@
 {
-    "name": "hexo-migrator-web",
-    "version": "1.1.0",
-    "description": "Hexo Migrator plugin for common Web pages",
+    "name": "web-fetch",
+    "version": "1.2.0",
+    "description": "Asset Crawler for common Web pages",
     "keywords": [
-        "hexo",
-        "migrate",
-        "plugin",
+        "asset",
+        "crawler",
+        "browser",
         "web"
     ],
-    "license": "GPL-3.0",
+    "license": "LGPL-3.0",
     "author": "shiy2008@gmail.com",
-    "homepage": "https://tech-query.me/hexo-migrator-web/",
+    "homepage": "https://tech-query.me/Web-fetch/",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/TechQuery/hexo-migrator-web.git"
+        "url": "git+https://github.com/TechQuery/Web-fetch.git"
     },
     "bugs": {
-        "url": "https://github.com/TechQuery/hexo-migrator-web/issues"
+        "url": "https://github.com/TechQuery/Web-fetch/issues"
     },
+    "source": "source/index.ts",
+    "types": "dist/index.d.ts",
     "main": "dist/index.js",
     "bin": {
         "web-fetch": "dist/command.js"
@@ -25,7 +27,7 @@
     "scripts": {
         "prepare": "husky install",
         "test": "lint-staged",
-        "debug": "rm -rf test/  &&  mkdir test  &&  cd test/  &&  ts-node ../source/command.ts",
+        "debug": "rm -rf test/  &&  mkdir test  &&  cd test/  &&  ts-node ../source/command.tsx",
         "build": "rm -rf dist/  &&  tsc  &&  typedoc source/",
         "prepublishOnly": "npm test  &&  npm run build",
         "install": "app-find chrome -c",
@@ -36,38 +38,39 @@
         "*.ts": "eslint --fix"
     },
     "dependencies": {
-        "@tech_query/node-toolkit": "^1.1.0",
-        "file-type": "^16.5.3",
-        "fs-extra": "^10.0.0",
+        "@tech_query/node-toolkit": "^1.2.0",
+        "array-unique-proposal": "^0.3.4",
+        "commander-jsx": "^0.6.1",
+        "file-type": "^16.5.4",
+        "fs-extra": "^10.1.0",
         "fs-match": "^1.6.0",
-        "jsdom": "^19.0.0",
-        "node-fetch": "^2.6.6",
-        "puppeteer-core": "13.0.1",
+        "jsdom": "^20.0.1",
+        "lodash.memoize": "^4.1.2",
+        "node-fetch": "^2.6.7",
+        "puppeteer-core": "^19.1.0",
+        "tslib": "^2.4.0",
         "turndown": "^7.1.1",
         "turndown-plugin-gfm": "^1.0.2",
-        "yaml": "^1.10.2"
-    },
-    "peerDependencies": {
-        "hexo": ">= 3.0.0"
+        "yaml": "^2.1.3"
     },
     "devDependencies": {
         "@types/fs-extra": "^9.0.13",
-        "@types/hexo": "^3.8.7",
-        "@types/jsdom": "^16.2.14",
-        "@types/node": "^14.18.4",
-        "@types/node-fetch": "^2.5.12",
+        "@types/jsdom": "^20.0.0",
+        "@types/lodash.memoize": "^4.1.7",
+        "@types/node": "^16.11.68",
+        "@types/node-fetch": "^2.6.2",
         "@types/turndown": "^5.0.1",
-        "@typescript-eslint/eslint-plugin": "^5.9.0",
-        "@typescript-eslint/parser": "^5.9.0",
-        "eslint": "^8.6.0",
-        "eslint-config-prettier": "^8.3.0",
-        "husky": "^7.0.4",
-        "lint-staged": "^12.1.5",
-        "open-cli": "^7.0.1",
-        "prettier": "^2.5.1",
-        "ts-node": "^10.4.0",
-        "typedoc": "^0.22.10",
-        "typescript": "^4.5.4"
+        "@typescript-eslint/eslint-plugin": "^5.40.1",
+        "@typescript-eslint/parser": "^5.40.1",
+        "eslint": "^8.26.0",
+        "eslint-config-prettier": "^8.5.0",
+        "husky": "^8.0.1",
+        "lint-staged": "^13.0.3",
+        "open-cli": "^7.1.0",
+        "prettier": "^2.7.1",
+        "ts-node": "^10.9.1",
+        "typedoc": "^0.23.17",
+        "typescript": "~4.8.4"
     },
     "prettier": {
         "tabWidth": 4,
