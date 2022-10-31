@@ -3,7 +3,6 @@ lockfileVersion: 5.4
 specifiers:
   '@tech_query/node-toolkit': ^1.2.0
   '@types/fs-extra': ^9.0.13
-  '@types/hexo': ^3.8.8
   '@types/jsdom': ^20.0.0
   '@types/lodash.memoize': ^4.1.7
   '@types/node': ^16.11.68
@@ -52,7 +51,6 @@ dependencies:
 
 devDependencies:
   '@types/fs-extra': 9.0.13
-  '@types/hexo': 3.8.8
   '@types/jsdom': 20.0.0
   '@types/lodash.memoize': 4.1.7
   '@types/node': 16.11.68
@@ -422,44 +420,10 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
 
-  /@types/bluebird/3.5.37:
-    resolution: {integrity: sha512-g2qEd+zkfkTEudA2SrMAeAvY7CrFqtbsLILm2dT2VIeKTqMqVzcdfURlvu6FU3srRgbmXN1Srm94pg34EIehww==}
-    dev: true
-
-  /@types/bunyan/1.8.8:
-    resolution: {integrity: sha512-Cblq+Yydg3u+sGiz2mjHjC5MPmdjY+No4qvHrF+BUhblsmSfMvsHLbOG62tPbonsqBj6sbWv1LHcsoe5Jw+/Ow==}
-    dependencies:
-      '@types/node': 16.11.68
-    dev: true
-
-  /@types/connect/3.4.35:
-    resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
-    dependencies:
-      '@types/node': 16.11.68
-    dev: true
-
   /@types/fs-extra/9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
       '@types/node': 16.11.68
-    dev: true
-
-  /@types/hexo-util/0.6.5:
-    resolution: {integrity: sha512-iEu8Z9jCsc1HMdkRz9GXuBajNWNw0VjxGfNOZW3dJWjpp1geg0cGZRM9+DDiTwWMTgdGyUYflvzSlPWCTHRRGQ==}
-    dependencies:
-      '@types/node': 16.11.68
-    dev: true
-
-  /@types/hexo/3.8.8:
-    resolution: {integrity: sha512-xwe6UHW1rqMlawyfDSBBhI7s3tOmMHJFghklJ0SjabaQys7Yj/XCITUDLSGYG/SpvfDt+YTeVPWQ2Dt0LQiLTA==}
-    dependencies:
-      '@types/bluebird': 3.5.37
-      '@types/bunyan': 1.8.8
-      '@types/connect': 3.4.35
-      '@types/hexo-util': 0.6.5
-      '@types/minimist': 1.2.2
-      '@types/underscore': 1.11.4
-      moment: 2.29.4
     dev: true
 
   /@types/jsdom/20.0.0:
@@ -512,10 +476,6 @@ packages:
 
   /@types/turndown/5.0.1:
     resolution: {integrity: sha512-N8Ad4e3oJxh9n9BiZx9cbe/0M3kqDpOTm2wzj13wdDUxDPjfjloWIJaquZzWE1cYTAHpjOH3rcTnXQdpEfS/SQ==}
-    dev: true
-
-  /@types/underscore/1.11.4:
-    resolution: {integrity: sha512-uO4CD2ELOjw8tasUrAhvnn2W4A0ZECOvMjCivJr4gA9pGgjv+qxKWY9GLTMVEK8ej85BxQOocUyE7hImmSQYcg==}
     dev: true
 
   /@types/yauzl/2.10.0:
@@ -2003,10 +1963,6 @@ packages:
   /mkdirp-classic/0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
     dev: false
-
-  /moment/2.29.4:
-    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
-    dev: true
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
