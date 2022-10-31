@@ -1,0 +1,33 @@
+{
+    "name": "hexo-migrator-web",
+    "version": "1.2.0",
+    "license": "LGPL-3.0",
+    "author": "shiy2008@gmail.com",
+    "description": "Hexo Migrator plugin for common Web pages",
+    "keywords": [
+        "hexo",
+        "migrate",
+        "plugin",
+        "web"
+    ],
+    "homepage": "https://github.com/TechQuery/Web-fetch/tree/master/wrapper/Hexo/",
+    "bugs": {
+        "url": "https://github.com/TechQuery/Web-fetch/issues"
+    },
+    "source": "index.ts",
+    "main": "index.js",
+    "dependencies": {
+        "web-fetch": "^1.2.0"
+    },
+    "peerDependencies": {
+        "hexo": ">= 3.0.0"
+    },
+    "devDependencies": {
+        "@types/hexo": "^3.8.8",
+        "typescript": "~4.8.4"
+    },
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    }
+}

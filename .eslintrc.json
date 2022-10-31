@@ -19,5 +19,6 @@
         "@typescript-eslint/no-misused-promises": "warn",
         "@typescript-eslint/no-floating-promises": "warn",
         "@typescript-eslint/prefer-regexp-exec": "off"
-    }
+    },
+    "ignorePatterns": ["wrapper/*"]
 }
