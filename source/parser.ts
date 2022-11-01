@@ -64,19 +64,21 @@ export const convertor = new TurnDown({
     linkStyle: 'referenced'
 });
 
+export const IgnoredTags: (keyof HTMLElementTagNameMap)[] = [
+    'link',
+    'script',
+    'form',
+    'fieldset',
+    'legend',
+    'label',
+    'input',
+    'button'
+];
+
 convertor
     .use(gfm)
     .addRule('user_interface', {
-        filter: [
-            'style',
-            'script',
-            'form',
-            'fieldset',
-            'legend',
-            'label',
-            'input',
-            'button'
-        ],
+        filter: IgnoredTags,
         replacement: () => ''
     })
     .addRule('non_url', {

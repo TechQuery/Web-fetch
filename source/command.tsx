@@ -24,15 +24,25 @@ Command.execute(
                 parameters: '<selector>',
                 description: 'CSS Selector of Root HTML Container'
             },
+            baseURI: {
+                shortcut: 'b',
+                parameters: '<URL>',
+                description: 'Base URL of fetched HTML assets'
+            },
             markdown: {
                 shortcut: 'm',
                 description: 'Whether converts HTML to MarkDown'
             }
         }}
-        executor={async ({ rootSelector, markdown }, source, rootFolder) => {
+        executor={async (
+            { rootSelector, baseURI, markdown },
+            source,
+            rootFolder
+        ) => {
             await savePage({
                 source,
                 rootSelector,
+                baseURI,
                 markdown,
                 rootFolder
             } as PageSaveOption);

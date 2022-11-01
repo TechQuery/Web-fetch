@@ -9,6 +9,7 @@ import { outputFile } from 'fs-extra';
 
 import { executablePath, userAgent, meta_tag, body_tag } from './config';
 import {
+    IgnoredTags,
     sourcePathOf,
     parsePage,
     fileNameOf,
@@ -55,9 +56,12 @@ export interface MediaItem {
     data: Buffer;
 }
 
+const MediaSelector = 'img, audio, video',
+    LinkSelector = 'a[href], area[href]';
+
 export async function fetchMedia(root: HTMLElement, root_path = '') {
     const list = Array.from(
-        root.querySelectorAll<HTMLMediaElement>('img, audio, video'),
+        root.querySelectorAll<HTMLMediaElement>(MediaSelector),
         async media => {
             try {
                 var { pathname, protocol, href } = sourcePathOf(media);
@@ -89,39 +93,78 @@ export async function fetchMedia(root: HTMLElement, root_path = '') {
         .filter(Boolean) as MediaItem[];
 }
 
+export function fixBaseURI(document: Document, baseURI: string) {
+    const base = document.createElement('base');
+    base.href = baseURI;
+    document.head.append(base);
+
+    for (const media of document.querySelectorAll<HTMLMediaElement>(
+        MediaSelector
+    ))
+        media.setAttribute('src', media.src);
+
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(
+        LinkSelector
+    ))
+        link.setAttribute('href', link.href);
+
+    base.remove();
+}
+
 export interface PageData
     extends Partial<Record<keyof typeof meta_tag, string | string[]>> {
     content: string;
     media: MediaItem[];
 }
 
-export async function fetchPage(
-    URI: string,
-    root_selector?: string
-): Promise<PageData> {
+export interface PageFetchOption {
+    source: string;
+    rootSelector?: string;
+    baseURI?: string;
+}
+
+export async function fetchPage({
+    source,
+    rootSelector,
+    baseURI = ''
+}: PageFetchOption): Promise<PageData> {
     const {
         window: { document }
-    } = await loadPage(URI);
+    } = await loadPage(source);
 
     let root: HTMLElement;
 
-    for (const selector of [root_selector, ...body_tag])
+    for (const selector of [rootSelector, ...body_tag])
         if (selector && (root = document.querySelector(selector))) break;
 
     const meta = parsePage(document, meta_tag),
-        media = await fetchMedia(root, parse(URI).name);
+        media = await fetchMedia(root, parse(source).name);
 
-    for (const element of document.querySelectorAll(
-        'link, script, form, fieldset, legend, label, input, button'
-    ))
+    if (baseURI) fixBaseURI(document, baseURI);
+
+    for (const element of document.querySelectorAll(IgnoredTags + ''))
         element.remove();
 
-    return { ...meta, content: root.innerHTML, media };
+    for (const element of document.querySelectorAll<HTMLElement>(
+        '[style*="display:"]'
+    )) {
+        const { display, visibility, opacity, width, height } = element.style;
+
+        if (
+            display === 'none' ||
+            visibility === 'hidden' ||
+            !(opacity || width || height)
+        )
+            element.remove();
+    }
+    return {
+        ...meta,
+        content: root.innerHTML.trim().replace(/(\n\s*)+/g, '\n'),
+        media
+    };
 }
 
-export interface PageSaveOption {
-    source: string;
-    rootSelector?: string;
+export interface PageSaveOption extends PageFetchOption {
     markdown?: boolean;
     rootFolder?: string;
 }
@@ -129,13 +172,17 @@ export interface PageSaveOption {
 export async function savePage({
     source,
     rootSelector,
+    baseURI = '',
     markdown,
     rootFolder = process.cwd()
 }: PageSaveOption) {
     console.time('Fetch');
 
-    const { content, media, ...meta } = await fetchPage(source, rootSelector);
-
+    const { content, media, ...meta } = await fetchPage({
+        source,
+        rootSelector,
+        baseURI
+    });
     const root_path = join(
         rootFolder,
         ...((meta.categories as string[]) || []).map(fileNameOf)
