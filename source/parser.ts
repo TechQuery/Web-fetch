@@ -5,24 +5,57 @@ import { uniqueID } from '@tech_query/node-toolkit';
 import { fromBuffer } from 'file-type';
 import { join } from 'path';
 
-const attribute_key = {
-    '#': 'id',
-    '.': 'class'
-};
+import { body_tag } from './config';
+
+export const AttributeKey = {
+        '#': 'id',
+        '.': 'class'
+    },
+    MediaSelector = 'img, audio, video',
+    LinkSelector = 'a[href], area[href]';
 
 export function likeOf(selector: string) {
-    const key = attribute_key[selector[0] as keyof typeof attribute_key];
+    const key = AttributeKey[selector[0] as keyof typeof AttributeKey];
 
     return key ? `[${key}*="${selector.slice(1)}" i]` : selector;
 }
 
-export function parsePage<T extends Record<string, string[]>>(
+export function parseContent(document: Document, rootSelector = '') {
+    let root: HTMLElement;
+
+    for (const selector of [rootSelector, ...body_tag])
+        if (selector && (root = document.querySelector(selector))) break;
+
+    for (const element of document.querySelectorAll(IgnoredTags + ''))
+        element.remove();
+
+    for (const element of document.querySelectorAll<HTMLElement>(
+        '[style*="display:"]'
+    )) {
+        const { display, visibility, opacity, width, height } =
+            document.defaultView.getComputedStyle(element);
+
+        if (
+            !element.matches(MediaSelector) &&
+            (display === 'none' ||
+                visibility === 'hidden' ||
+                !(opacity || width || height))
+        )
+            element.remove();
+    }
+    return root;
+}
+
+export type MetaData<T extends Record<string, any>> = Record<
+    keyof T,
+    string | string[]
+>;
+
+export function parseMeta<T extends Record<string, string[]>>(
     document: Document,
     selectorMap: T
 ) {
-    type MetaData = Record<keyof T, string | string[]>;
-
-    const data: MetaData = {} as MetaData;
+    const data = {} as MetaData<T>;
 
     for (const key in selectorMap)
         for (const selector of selectorMap[key]) {

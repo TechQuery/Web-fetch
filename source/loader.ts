@@ -1,5 +1,5 @@
 import memoize from 'lodash.memoize';
-import Puppeteer, { Page } from 'puppeteer-core';
+import Puppeteer, { Browser } from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
 import { join, parse } from 'path';
@@ -7,18 +7,53 @@ import { blobFrom } from '@tech_query/node-toolkit';
 import { stringify } from 'yaml';
 import { outputFile } from 'fs-extra';
 
-import { executablePath, userAgent, meta_tag, body_tag } from './config';
+import { executablePath, userAgent, meta_tag } from './config';
 import {
-    IgnoredTags,
-    sourcePathOf,
-    parsePage,
-    fileNameOf,
+    LinkSelector,
+    MediaSelector,
+    MetaData,
+    parseMeta,
+    parseContent,
     convertor,
+    sourcePathOf,
+    fileNameOf,
     createFilePath
 } from './parser';
 
-export const getPage: () => Promise<Page> = memoize(async () => {
-    const browser = await Puppeteer.launch({ executablePath });
+export const getBrowser: () => Promise<Browser> = memoize(() =>
+    Puppeteer.launch({
+        executablePath,
+        args: [
+            '--single-process',
+            '--no-zygote',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--no-default-browser-check',
+            '--disable-default-apps',
+            '--disable-extensions',
+            '--no-startup-window',
+            '--no-first-run',
+            '--disable-infobars',
+            '--disable-hang-monitor',
+            '--disable-popup-blocking',
+            '--disable-prompt-on-repost',
+            '--disable-sync',
+            '--disable-translate',
+            '--disable-bundled-ppapi-flash',
+            '--safebrowsing-disable-auto-update',
+            '--disable-component-update',
+            '--ignore-certificate-errors',
+            '--disable-client-side-phishing-detection',
+            '--disable-logging',
+            '--mute-audio'
+        ]
+    })
+);
+
+export async function getPage() {
+    const browser = await getBrowser();
     const page = await browser.newPage();
 
     await Promise.all([
@@ -33,7 +68,7 @@ export const getPage: () => Promise<Page> = memoize(async () => {
         else request.continue();
     });
     return page;
-});
+}
 
 export async function loadPage(URI: string, root_selector = 'body') {
     if (!executablePath)
@@ -42,55 +77,50 @@ export async function loadPage(URI: string, root_selector = 'body') {
             pretendToBeVisual: true,
             runScripts: 'outside-only'
         });
-
     const page = await getPage();
 
     await page.goto(URI);
     await page.waitForSelector(`${root_selector}:not(:empty)`);
 
-    return new JSDOM(await page.content(), { url: URI });
+    const HTML = await page.content();
+
+    await page.close();
+
+    return new JSDOM(HTML, { url: URI });
 }
 
 export interface MediaItem {
-    name: string;
+    MIME: string;
+    name?: string;
     data: Buffer;
 }
 
-const MediaSelector = 'img, audio, video',
-    LinkSelector = 'a[href], area[href]';
-
-export async function fetchMedia(root: HTMLElement, root_path = '') {
-    const list = Array.from(
-        root.querySelectorAll<HTMLMediaElement>(MediaSelector),
-        async media => {
-            try {
-                var { pathname, protocol, href } = sourcePathOf(media);
-            } catch {
-                media.remove();
-            }
-
-            if (protocol === 'data:') var { data } = await blobFrom(href);
-            else
-                var data = await (
-                    await fetch(href, { headers: { 'User-Agent': userAgent } })
-                ).buffer();
-
-            const name = await createFilePath(data, pathname, root_path);
-
-            media.src = name;
-
-            if (media.style.display === 'none') media.style.display = '';
-
-            return { name, data };
+export async function* fetchMedia(root: HTMLElement, root_path = '') {
+    for (const media of root.querySelectorAll<HTMLMediaElement>(
+        MediaSelector
+    )) {
+        try {
+            var { pathname, protocol, href } = sourcePathOf(media);
+        } catch {
+            media.remove();
         }
-    );
-    return (await Promise.allSettled(list))
-        .map(result =>
-            result.status === 'fulfilled'
-                ? result.value
-                : console.error(result.reason)
-        )
-        .filter(Boolean) as MediaItem[];
+
+        if (protocol === 'data:') var { MIME, data } = await blobFrom(href);
+        else {
+            const response = await fetch(href, {
+                headers: { 'User-Agent': userAgent }
+            });
+            var [MIME] = response.headers.get('Content-Type').split(';'),
+                data = await response.buffer();
+        }
+        const name = await createFilePath(data, pathname, root_path);
+
+        media.src = name;
+
+        if (media.style.display === 'none') media.style.display = '';
+
+        yield { MIME, name, data };
+    }
 }
 
 export function fixBaseURI(document: Document, baseURI: string) {
@@ -111,61 +141,41 @@ export function fixBaseURI(document: Document, baseURI: string) {
     base.remove();
 }
 
-export interface PageData
-    extends Partial<Record<keyof typeof meta_tag, string | string[]>> {
-    content: string;
-    media: MediaItem[];
-}
-
-export interface PageFetchOption {
-    source: string;
+export interface AssetFetchOption {
+    scope: string;
     rootSelector?: string;
     baseURI?: string;
+    markdown?: boolean;
 }
 
-export async function fetchPage({
-    source,
-    rootSelector,
-    baseURI = ''
-}: PageFetchOption): Promise<PageData> {
-    const {
-        window: { document }
-    } = await loadPage(source);
+export async function* fetchAsset(
+    document: Document,
+    { scope, rootSelector, baseURI = '', markdown }: AssetFetchOption,
+    meta: MetaData<typeof meta_tag>
+) {
+    const root = parseContent(document, rootSelector);
 
-    let root: HTMLElement;
-
-    for (const selector of [rootSelector, ...body_tag])
-        if (selector && (root = document.querySelector(selector))) break;
-
-    const meta = parsePage(document, meta_tag),
-        media = await fetchMedia(root, parse(source).name);
+    for await (const media of fetchMedia(root, scope)) yield media as MediaItem;
 
     if (baseURI) fixBaseURI(document, baseURI);
 
-    for (const element of document.querySelectorAll(IgnoredTags + ''))
-        element.remove();
+    let markup = root.innerHTML.trim().replace(/(\n\s*)+/g, '\n');
 
-    for (const element of document.querySelectorAll<HTMLElement>(
-        '[style*="display:"]'
-    )) {
-        const { display, visibility, opacity, width, height } = element.style;
+    if (markdown)
+        markup = `---
+${stringify(meta)}
+---
 
-        if (
-            display === 'none' ||
-            visibility === 'hidden' ||
-            !(opacity || width || height)
-        )
-            element.remove();
-    }
-    return {
-        ...meta,
-        content: root.innerHTML.trim().replace(/(\n\s*)+/g, '\n'),
-        media
-    };
+${convertor.turndown(markup)}`;
+
+    yield {
+        MIME: `text/${markdown ? 'markdown' : 'html'}`,
+        data: Buffer.from(markup)
+    } as MediaItem;
 }
 
-export interface PageSaveOption extends PageFetchOption {
-    markdown?: boolean;
+export interface PageSaveOption extends Omit<AssetFetchOption, 'scope'> {
+    source: string;
     rootFolder?: string;
 }
 
@@ -178,37 +188,33 @@ export async function savePage({
 }: PageSaveOption) {
     console.time('Fetch');
 
-    const { content, media, ...meta } = await fetchPage({
-        source,
-        rootSelector,
-        baseURI
-    });
+    const scope = parse(source).name,
+        {
+            window: { document }
+        } = await loadPage(source);
+
+    const meta = parseMeta(document, meta_tag);
+
     const root_path = join(
         rootFolder,
         ...((meta.categories as string[]) || []).map(fileNameOf)
     );
-    const text_file = join(
-            root_path,
-            `${fileNameOf(parse(source).name)}.${markdown ? 'md' : 'html'}`
-        ),
-        data = !markdown
-            ? content
-            : `---
-${stringify(meta)}
----
 
-${convertor.turndown(content)}`;
+    for await (const { MIME, name, data } of fetchAsset(
+        document,
+        { scope, rootSelector, baseURI, markdown },
+        meta
+    )) {
+        const [type, extension] = MIME.split('/');
 
-    await outputFile(text_file, data);
+        const filePath =
+            type === 'text'
+                ? join(root_path, `${fileNameOf(scope)}.${extension}`)
+                : join(root_path, name);
 
-    console.log('[save] ' + text_file);
+        await outputFile(filePath, data);
 
-    for (const { name, data } of media) {
-        const media_file = join(root_path, name);
-
-        await outputFile(media_file, data);
-
-        console.log('[save] ' + media_file);
+        console.log('[save] ' + filePath);
     }
     console.log('--------------------');
     console.timeEnd('Fetch');
