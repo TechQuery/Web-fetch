@@ -91,7 +91,7 @@ export async function loadPage(URI: string, root_selector = 'body') {
 
 export interface MediaItem {
     MIME: string;
-    name?: string;
+    name: string;
     data: Buffer;
 }
 
@@ -151,15 +151,16 @@ export interface AssetFetchOption {
 export async function* fetchAsset(
     document: Document,
     { scope, rootSelector, baseURI = '', markdown }: AssetFetchOption,
-    meta: MetaData<typeof meta_tag>
-) {
+    meta?: MetaData<typeof meta_tag>
+): AsyncGenerator<MediaItem, void, unknown> {
     const root = parseContent(document, rootSelector);
 
-    for await (const media of fetchMedia(root, scope)) yield media as MediaItem;
+    for await (const media of fetchMedia(root, scope)) yield media;
 
     if (baseURI) fixBaseURI(document, baseURI);
 
-    let markup = root.innerHTML.trim().replace(/(\n\s*)+/g, '\n');
+    let markup = `<meta charset="UTF-8">
+${root.innerHTML.trim().replace(/(\n\s*)+/g, '\n')}`;
 
     if (markdown)
         markup = `---
@@ -170,8 +171,9 @@ ${convertor.turndown(markup)}`;
 
     yield {
         MIME: `text/${markdown ? 'markdown' : 'html'}`,
+        name: `${fileNameOf(scope)}.${markdown ? 'md' : 'html'}`,
         data: Buffer.from(markup)
-    } as MediaItem;
+    };
 }
 
 export interface PageSaveOption extends Omit<AssetFetchOption, 'scope'> {
@@ -200,17 +202,12 @@ export async function savePage({
         ...((meta.categories as string[]) || []).map(fileNameOf)
     );
 
-    for await (const { MIME, name, data } of fetchAsset(
+    for await (const { name, data } of fetchAsset(
         document,
         { scope, rootSelector, baseURI, markdown },
         meta
     )) {
-        const [type, extension] = MIME.split('/');
-
-        const filePath =
-            type === 'text'
-                ? join(root_path, `${fileNameOf(scope)}.${extension}`)
-                : join(root_path, name);
+        const filePath = join(root_path, name);
 
         await outputFile(filePath, data);
 

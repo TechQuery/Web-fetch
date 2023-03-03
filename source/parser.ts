@@ -98,6 +98,7 @@ export const convertor = new TurnDown({
 });
 
 export const IgnoredTags: (keyof HTMLElementTagNameMap)[] = [
+    'meta',
     'link',
     'script',
     'form',

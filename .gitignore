@@ -1,5 +1,9 @@
+# Configuration
+.env
+
 # Node.JS
 package-lock.json
+yarn.lock
 node_modules/
 
 # Building

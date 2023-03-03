@@ -1,5 +1,6 @@
 .editorconfig
 .eslintrc.json
+.env
 test/
 docs/
 .github/
