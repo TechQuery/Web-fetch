@@ -15,7 +15,6 @@ type Options = Omit<PageSaveOption, 'source' | 'rootFolder'>;
 Command.execute(
     <Command<Options>
         name="web-fetch"
-        version="1.2.0"
         description="Web page fetcher"
         parameters="<source URL> [target folder] [options]"
         options={{
