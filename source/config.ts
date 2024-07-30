@@ -1,11 +1,22 @@
-import { getNPMConfig } from '@tech_query/node-toolkit';
+import { currentModulePath, packageOf } from '@tech_query/node-toolkit';
+import { config } from 'dotenv';
+import { join } from 'path';
 
 import { likeOf } from './parser';
 
 export const userAgent =
     'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; rv:11.0) like Gecko';
 
-export const executablePath = getNPMConfig('chrome') as string;
+// set `package.json`'s foldr as Current Working Directory
+const { path = process.cwd() } = packageOf(currentModulePath());
+
+config({ path: join(path, '.env') });
+
+const { chrome, msedge, firefox } = process.env;
+
+export const executablePath = chrome || msedge || firefox;
+
+export const isFirefox = executablePath.includes('firefox');
 
 export const body_tag = [
     'article',

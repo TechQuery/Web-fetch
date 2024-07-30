@@ -48,7 +48,7 @@ jobs:
 
             - uses: pnpm/action-setup@v2
               with:
-                  version: 8
+                  version: 9
             - uses: actions/setup-node@v3
               with:
                   node-version: 18
@@ -68,7 +68,7 @@ jobs:
 
 ## Supported Structure
 
-https://github.com/TechQuery/Web-fetch/blob/master/source/config.ts#L10-L29
+https://github.com/TechQuery/Web-fetch/blob/d4c574adb6ed4b3030995f4ea26911e88d00c1fc/source/config.ts#L10-L29
 
 ## Renderer
 

@@ -1,13 +1,12 @@
 import memoize from 'lodash.memoize';
 import Puppeteer, { Browser } from 'puppeteer-core';
 import { JSDOM } from 'jsdom';
-import fetch from 'node-fetch';
 import { join, parse } from 'path';
 import { blobFrom } from '@tech_query/node-toolkit';
 import { stringify } from 'yaml';
 import { outputFile } from 'fs-extra';
 
-import { executablePath, userAgent, meta_tag } from './config';
+import { executablePath, isFirefox, userAgent, meta_tag } from './config';
 import {
     LinkSelector,
     MediaSelector,
@@ -22,6 +21,9 @@ import {
 
 export const getBrowser: () => Promise<Browser> = memoize(() =>
     Puppeteer.launch({
+        product: isFirefox ? 'firefox' : 'chrome',
+        protocol: isFirefox ? 'webDriverBiDi' : 'cdp',
+        headless: 'shell',
         executablePath,
         args: [
             '--single-process',
@@ -111,7 +113,7 @@ export async function* fetchMedia(root: HTMLElement, root_path = '') {
                 headers: { 'User-Agent': userAgent }
             });
             var [MIME] = response.headers.get('Content-Type').split(';'),
-                data = await response.buffer();
+                data = Buffer.from(await response.arrayBuffer());
         }
         const name = await createFilePath(data, pathname, root_path);
 
