@@ -12,7 +12,7 @@ hexo migrate web http://URL.to/one/of/your/old/posts/
 
 ## Supported Structure
 
-https://github.com/TechQuery/Web-fetch/blob/master/source/config.ts#L10-L29
+https://github.com/TechQuery/Web-fetch/blob/d4c574adb6ed4b3030995f4ea26911e88d00c1fc/source/config.ts#L10-L29
 
 ## Renderer
 

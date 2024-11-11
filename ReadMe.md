@@ -44,14 +44,14 @@ jobs:
             contents: write
             issues: write
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: 9
-            - uses: actions/setup-node@v3
+            - uses: actions/setup-node@v4
               with:
-                  node-version: 18
+                  node-version: 20
                   cache: pnpm
             - uses: browser-actions/setup-chrome@v1
 
