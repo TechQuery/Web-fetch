@@ -1,56 +1,28 @@
-import memoize from 'lodash.memoize';
-import Puppeteer, { Browser } from 'puppeteer-core';
-import { JSDOM } from 'jsdom';
-import { join, parse } from 'path';
 import { blobFrom } from '@tech_query/node-toolkit';
-import { stringify } from 'yaml';
 import { outputFile } from 'fs-extra';
+import { JSDOM } from 'jsdom';
+import memoize from 'lodash.memoize';
+import { join, parse } from 'path';
+import Puppeteer, { Browser } from 'puppeteer-core';
+import { stringify } from 'yaml';
 
-import { executablePath, isFirefox, userAgent, meta_tag } from './config';
+import { executablePath, isFirefox, meta_tag, userAgent } from './config';
 import {
+    convertor,
+    createFilePath,
+    fileNameOf,
     LinkSelector,
     MediaSelector,
     MetaData,
-    parseMeta,
     parseContent,
-    convertor,
-    sourcePathOf,
-    fileNameOf,
-    createFilePath
+    parseMeta,
+    sourcePathOf
 } from './parser';
 
 export const getBrowser: () => Promise<Browser> = memoize(() =>
     Puppeteer.launch({
-        product: isFirefox ? 'firefox' : 'chrome',
-        protocol: isFirefox ? 'webDriverBiDi' : 'cdp',
-        headless: 'shell',
-        executablePath,
-        args: [
-            '--single-process',
-            '--no-zygote',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--no-default-browser-check',
-            '--disable-default-apps',
-            '--disable-extensions',
-            '--no-startup-window',
-            '--no-first-run',
-            '--disable-infobars',
-            '--disable-hang-monitor',
-            '--disable-popup-blocking',
-            '--disable-prompt-on-repost',
-            '--disable-sync',
-            '--disable-translate',
-            '--disable-bundled-ppapi-flash',
-            '--safebrowsing-disable-auto-update',
-            '--disable-component-update',
-            '--ignore-certificate-errors',
-            '--disable-client-side-phishing-detection',
-            '--disable-logging',
-            '--mute-audio'
-        ]
+        browser: isFirefox ? 'firefox' : 'chrome',
+        executablePath
     })
 );
 
