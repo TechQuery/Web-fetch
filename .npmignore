@@ -1,9 +1,5 @@
-.editorconfig
-.eslintrc.json
-.env
+.*
+eslint.config.mjs
 test/
 docs/
-.github/
-.husky/
-.vscode/
 wrapper/

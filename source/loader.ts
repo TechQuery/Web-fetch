@@ -3,7 +3,7 @@ import { outputFile } from 'fs-extra';
 import { JSDOM } from 'jsdom';
 import memoize from 'lodash.memoize';
 import { join, parse } from 'path';
-import Puppeteer, { Browser } from 'puppeteer-core';
+import { Browser, launch } from 'puppeteer-core';
 import { stringify } from 'yaml';
 
 import { executablePath, isFirefox, meta_tag, userAgent } from './config';
@@ -20,9 +20,10 @@ import {
 } from './parser';
 
 export const getBrowser: () => Promise<Browser> = memoize(() =>
-    Puppeteer.launch({
+    launch({
         browser: isFirefox ? 'firefox' : 'chrome',
-        executablePath
+        executablePath,
+        args: ['--no-sandbox']
     })
 );
 
