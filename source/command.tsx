@@ -1,6 +1,6 @@
 #! /usr/bin node
 
-import { Command, createCommand } from 'commander-jsx';
+import { Command } from 'commander-jsx';
 
 import { PageSaveOption, savePage } from './loader';
 

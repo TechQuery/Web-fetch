@@ -7,12 +7,13 @@
         "moduleResolution": "Node",
         "esModuleInterop": true,
         "downlevelIteration": true,
-        "jsx": "react",
-        "jsxFactory": "createCommand",
+        "jsx": "react-jsx",
+        "jsxImportSource": "commander-jsx",
         "importHelpers": true,
+        "skipLibCheck": true,
         "lib": ["ES2020", "DOM", "DOM.Iterable"]
     },
-    "include": ["source/*"],
+    "include": ["source/*", "*.ts"],
     "typedocOptions": {
         "name": "Web fetch",
         "excludeExternals": true,

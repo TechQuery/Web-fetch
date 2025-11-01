@@ -1,14 +1,14 @@
-// @ts-check
 import eslint from '@eslint/js';
+import { currentModulePath } from '@tech_query/node-toolkit';
+import { defineConfig } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tsEslint from 'typescript-eslint';
-import { fileURLToPath } from 'url';
 
-const tsconfigRootDir = fileURLToPath(new URL('.', import.meta.url));
+const tsconfigRootDir = currentModulePath();
 
-export default tsEslint.config(
+export default defineConfig(
     // register all of the plugins up-front
     {
         plugins: {

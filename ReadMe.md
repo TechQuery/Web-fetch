@@ -19,10 +19,6 @@ savePage({
 });
 ```
 
-#### Docker example
-
-https://github.com/kaiyuanshe/KYS-service
-
 ### As a Command Line tool
 
 ```shell
@@ -48,10 +44,10 @@ jobs:
 
             - uses: pnpm/action-setup@v4
               with:
-                  version: 9
+                  version: 10
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: pnpm
             - uses: browser-actions/setup-chrome@v1
 

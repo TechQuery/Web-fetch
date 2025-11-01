@@ -1,10 +1,10 @@
 import 'array-unique-proposal';
 
-import { uniqueID } from '@tech_query/node-toolkit';
 import { fromBuffer } from 'file-type';
 import { join } from 'path';
 import TurnDown from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
+import { uniqueID } from 'web-utility';
 
 import { body_tag } from './config';
 

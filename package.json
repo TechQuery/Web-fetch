@@ -1,6 +1,6 @@
 {
     "name": "web-fetch",
-    "version": "1.4.2",
+    "version": "1.5.0",
     "description": "Asset Crawler for common Web pages",
     "keywords": [
         "asset",
@@ -26,10 +26,12 @@
         "prepare": "husky",
         "test": "lint-staged",
         "debug": "rm -rf test/  &&  mkdir test  &&  cd test/  &&  tsx ../source/command.tsx",
-        "build": "rm -rf dist/  &&  tsc  &&  typedoc source/",
+        "pack-dist": "rm -rf dist/  &&  tsc  &&  mv dist/source/* dist/  &&  rm -rf dist/eslint.* dist/source",
+        "pack-docs": "rm -rf docs/  &&  typedoc source/",
+        "build": "npm run pack-dist  &&  npm run pack-docs",
         "prepublishOnly": "npm test  &&  npm run build",
-        "install": "app-find chrome msedge firefox -c",
-        "start": "typedoc source/  &&  open-cli docs/index.html"
+        "install": "app-find chrome msedge firefox -m 1 -c",
+        "start": "npm run pack-docs  &&  open-cli docs/index.html"
     },
     "lint-staged": {
         "*.{md,json,yml,ts}": "prettier --write",
@@ -39,42 +41,49 @@
         "node": ">=18"
     },
     "dependencies": {
-        "@tech_query/node-toolkit": "^2.0.0-alpha.0",
-        "@types/jsdom": "^21.1.7",
+        "@tech_query/node-toolkit": "2.0.0-beta.0",
+        "@types/jsdom": "^27.0.0",
         "array-unique-proposal": "^0.3.4",
-        "commander-jsx": "^0.6.9",
-        "dotenv": "^16.4.5",
+        "commander-jsx": "^0.7.1",
+        "dotenv": "^17.2.3",
         "file-type": "^16.5.4",
-        "fs-extra": "^11.2.0",
-        "fs-match": "^1.7.3",
-        "jsdom": "^25.0.1",
+        "fs-extra": "^11.3.2",
+        "fs-match": "^2.0.0",
+        "jsdom": "^27.1.0",
         "lodash.memoize": "^4.1.2",
-        "puppeteer-core": "^23.9.0",
+        "puppeteer-core": "^24.27.0",
         "tslib": "^2.8.1",
-        "turndown": "^7.2.0",
+        "turndown": "^7.2.2",
         "turndown-plugin-gfm": "^1.0.2",
-        "yaml": "^2.6.1"
+        "web-utility": "^4.6.4",
+        "yaml": "^2.8.1"
     },
     "devDependencies": {
-        "@eslint/js": "^9.15.0",
+        "@eslint/js": "^9.39.0",
         "@types/eslint-config-prettier": "^6.11.3",
         "@types/fs-extra": "^11.0.4",
         "@types/lodash.memoize": "^4.1.9",
-        "@types/node": "^20.17.7",
-        "@types/turndown": "^5.0.5",
-        "eslint": "^9.15.0",
-        "eslint-config-prettier": "^9.1.0",
+        "@types/node": "^22.18.13",
+        "@types/turndown": "^5.0.6",
+        "eslint": "^9.39.0",
+        "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-simple-import-sort": "^12.1.1",
-        "globals": "^15.12.0",
+        "globals": "^16.5.0",
         "husky": "^9.1.7",
-        "lint-staged": "^15.2.10",
+        "jiti": "^2.6.1",
+        "lint-staged": "^16.2.6",
         "open-cli": "^8.0.0",
-        "prettier": "^3.3.3",
-        "tsx": "^4.19.2",
-        "typedoc": "^0.26.11",
-        "typedoc-plugin-mdn-links": "^4.0.1",
-        "typescript": "~5.7.2",
-        "typescript-eslint": "^8.15.0"
+        "prettier": "^3.6.2",
+        "tsx": "^4.20.6",
+        "typedoc": "^0.28.14",
+        "typedoc-plugin-mdn-links": "^5.0.10",
+        "typescript": "~5.9.3",
+        "typescript-eslint": "^8.46.2"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "esbuild"
+        ]
     },
     "prettier": {
         "tabWidth": 4,
