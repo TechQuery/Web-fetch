@@ -2,7 +2,7 @@
 
 import { Command } from 'commander-jsx';
 
-import { PageSaveOption, savePage } from './loader';
+import { PageSaveOption, savePage } from './loader.js';
 
 process.on('unhandledRejection', error => {
     console.error(error);

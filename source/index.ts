@@ -1,2 +1,2 @@
-export * from './loader';
-export * from './parser';
+export * from './loader.js';
+export * from './parser.js';

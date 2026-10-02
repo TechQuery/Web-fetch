@@ -3,8 +3,11 @@ import { convertor, savePage } from 'web-fetch';
 
 convertor.addRule('asset_image', {
     filter: ['img'],
-    replacement(_, { src, title, alt }: HTMLImageElement) {
-        title = (title || alt).trim();
+    replacement(_, node) {
+        if (node.nodeName !== 'IMG') return '';
+
+        const { src, title: rawTitle, alt } = node as HTMLImageElement;
+        const title = (rawTitle || alt).trim();
 
         const code = src.startsWith('http')
             ? `![${title}](${src} '${title}')`

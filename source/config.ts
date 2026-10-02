@@ -1,22 +1,21 @@
-import { currentModulePath, packageOf } from '@tech_query/node-toolkit';
+import { fileURLToPath } from 'node:url';
+
 import { config } from 'dotenv';
 import { join } from 'path';
 
-import { likeOf } from './parser';
+import { likeOf } from './parser.js';
 
 export const userAgent =
     'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; rv:11.0) like Gecko';
 
-// set `package.json`'s foldr as Current Working Directory
-const { path = process.cwd() } = packageOf(currentModulePath());
-
-config({ path: join(path, '.env') });
+// set `package.json`'s folder as Current Working Directory
+config({ path: join(fileURLToPath(import.meta.url), '../.env') });
 
 const { chrome, msedge, firefox } = process.env;
 
 export const executablePath = chrome || msedge || firefox;
 
-export const isFirefox = executablePath.includes('firefox');
+export const isFirefox = executablePath?.includes('firefox') ?? false;
 
 export const body_tag = [
     'article',
