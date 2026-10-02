@@ -34,6 +34,6 @@
     },
     "scripts": {
         "build": "tsc",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "pnpm --dir ../.. run pack-dist && npm run build"
     }
 }
