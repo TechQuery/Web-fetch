@@ -20,13 +20,14 @@ jobs:
                   node-version: 24
                   registry-url: https://registry.npmjs.org
                   cache: pnpm
-            - name: Install Dependencies
-              run: pnpm i --frozen-lockfile
+            - run: pnpm install --frozen-lockfile
 
             - name: Build & Publish
               run: pnpm -r publish --no-git-checks --access public --provenance
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - run: pnpm run pack-docs
 
             - name: Update document
               uses: peaceiris/actions-gh-pages@v4

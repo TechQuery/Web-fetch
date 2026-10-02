@@ -36,7 +36,7 @@
         "pack-dist": "rm -rf dist/  &&  pkgroll --src source/",
         "pack-docs": "rm -rf docs/  &&  typedoc source/",
         "build": "npm run pack-dist  &&  npm run pack-docs",
-        "prepublishOnly": "npm test  &&  npm run build",
+        "prepublishOnly": "npm test  &&  npm run pack-dist",
         "install": "app-find chrome msedge firefox -m 2 -c",
         "start": "npm run pack-docs  &&  open-cli docs/index.html"
     },
