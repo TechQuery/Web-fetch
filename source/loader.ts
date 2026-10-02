@@ -6,7 +6,7 @@ import { join, parse } from 'path';
 import { Browser, launch } from 'puppeteer-core';
 import { stringify } from 'yaml';
 
-import { executablePath, isFirefox, meta_tag, userAgent } from './config';
+import { executablePath, isFirefox, meta_tag, userAgent } from './config.js';
 import {
     convertor,
     createFilePath,
@@ -17,7 +17,7 @@ import {
     parseContent,
     parseMeta,
     sourcePathOf
-} from './parser';
+} from './parser.js';
 
 export const getBrowser: () => Promise<Browser> = memoize(() =>
     launch({
@@ -42,13 +42,14 @@ export async function getPage() {
             request.abort();
         else request.continue();
     });
+
     return page;
 }
 
 export async function loadPage(URI: string, root_selector = 'body') {
     if (!executablePath)
         return JSDOM.fromURL(URI, {
-            userAgent,
+            resources: { userAgent },
             pretendToBeVisual: true,
             runScripts: 'outside-only'
         });
@@ -74,20 +75,30 @@ export async function* fetchMedia(root: HTMLElement, root_path = '') {
     for (const media of root.querySelectorAll<HTMLMediaElement>(
         MediaSelector
     )) {
+        let source: URL;
+
         try {
-            var { pathname, protocol, href } = sourcePathOf(media);
+            source = sourcePathOf(media);
         } catch {
             media.remove();
+            continue;
         }
 
-        if (protocol === 'data:') var { MIME, data } = await blobFrom(href);
+        const { pathname, protocol, href } = source;
+        let MIME: string, data: Buffer;
+
+        if (protocol === 'data:') ({ MIME, data } = await blobFrom(href));
         else {
             const response = await fetch(href, {
                 headers: { 'User-Agent': userAgent }
             });
-            var [MIME] = response.headers.get('Content-Type').split(';'),
-                data = Buffer.from(await response.arrayBuffer());
+
+            MIME =
+                response.headers.get('Content-Type')?.split(';')[0] ||
+                'application/octet-stream';
+            data = Buffer.from(await response.arrayBuffer());
         }
+
         const name = await createFilePath(data, pathname, root_path);
 
         media.src = name;
@@ -163,6 +174,7 @@ export async function savePage({
     markdown,
     rootFolder = process.cwd()
 }: PageSaveOption) {
+    // eslint-disable-next-line no-console
     console.time('Fetch');
 
     const scope = parse(source).name,
@@ -186,8 +198,9 @@ export async function savePage({
 
         await outputFile(filePath, data);
 
-        console.log('[save] ' + filePath);
+        console.info('[save] ' + filePath);
     }
-    console.log('--------------------');
+    console.info('--------------------');
+    // eslint-disable-next-line no-console
     console.timeEnd('Fetch');
 }

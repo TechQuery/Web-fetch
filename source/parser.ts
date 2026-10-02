@@ -1,12 +1,12 @@
 import 'array-unique-proposal';
 
-import { fromBuffer } from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import { join } from 'path';
 import TurnDown from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
 import { uniqueID } from 'web-utility';
 
-import { body_tag } from './config';
+import { body_tag } from './config.js';
 
 export const AttributeKey = {
         '#': 'id',
@@ -22,19 +22,27 @@ export function likeOf(selector: string) {
 }
 
 export function parseContent(document: Document, rootSelector = '') {
-    let root: HTMLElement;
+    let root = document.body;
 
-    for (const selector of [rootSelector, ...body_tag])
-        if (selector && (root = document.querySelector(selector))) break;
+    for (const selector of [rootSelector, ...body_tag]) {
+        const match = selector && document.querySelector<HTMLElement>(selector);
 
+        if (match) {
+            root = match;
+            break;
+        }
+    }
     for (const element of document.querySelectorAll(IgnoredTags + ''))
         element.remove();
 
     for (const element of document.querySelectorAll<HTMLElement>(
         '[style*="display:"]'
     )) {
-        const { display, visibility, opacity, width, height } =
-            document.defaultView.getComputedStyle(element);
+        const computedStyle = document.defaultView?.getComputedStyle(element);
+
+        if (!computedStyle) continue;
+
+        const { display, visibility, opacity, width, height } = computedStyle;
 
         if (
             !element.matches(MediaSelector) &&
@@ -44,6 +52,7 @@ export function parseContent(document: Document, rootSelector = '') {
         )
             element.remove();
     }
+
     return root;
 }
 
@@ -81,10 +90,11 @@ export function parseMeta<T extends Record<string, string[]>>(
 export function sourcePathOf({ dataset, src }: HTMLMediaElement) {
     for (const key in dataset)
         try {
-            return new URL(dataset[key]);
+            if (dataset[key]) return new URL(dataset[key]);
         } catch {
             //
         }
+
     return new URL(src);
 }
 
@@ -119,7 +129,7 @@ convertor
     .addRule('non_url', {
         filter: node =>
             ['a', 'area'].includes(node.nodeName.toLowerCase()) &&
-            Empty_URL.test(node.getAttribute('href')),
+            Empty_URL.test(node.getAttribute('href') || ''),
         replacement: () => ''
     });
 
@@ -128,16 +138,17 @@ export function fileNameOf(raw: string) {
 }
 
 export function parseFileName(path: string) {
-    const name_parts = path
-        .split('/')
-        .filter(Boolean)
-        .slice(-1)[0]
-        .split('.')
-        .filter(Boolean);
+    const name_parts =
+        path
+            .split('/')
+            .filter(Boolean)
+            .slice(-1)[0]
+            ?.split('.')
+            .filter(Boolean) || [];
 
     return {
         base: name_parts.slice(0, -1).join('.'),
-        ext: name_parts[1] && name_parts.slice(-1)[0].match(/^\w+/)[0]
+        ext: name_parts[1] && name_parts.slice(-1)[0].match(/^\w+/)?.[0]
     };
 }
 
@@ -148,7 +159,7 @@ export async function createFilePath(
 ) {
     const { base, ext } = parseFileName(raw_path);
 
-    const type = ext || (await fromBuffer(data))?.ext;
+    const type = ext || (await fileTypeFromBuffer(data))?.ext;
     let name = base || uniqueID();
 
     if (type) name += `.${type}`;

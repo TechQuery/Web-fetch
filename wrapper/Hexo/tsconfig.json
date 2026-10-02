@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
         "target": "ES2017",
-        "module": "CommonJS",
-        "moduleResolution": "Node",
-        "esModuleInterop": true
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "types": ["node", "hexo"]
     }
 }

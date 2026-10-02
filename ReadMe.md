@@ -40,16 +40,16 @@ jobs:
             contents: write
             issues: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
-            - uses: pnpm/action-setup@v4
+            - uses: pnpm/action-setup@v6
               with:
-                  version: 10
-            - uses: actions/setup-node@v4
+                  version: 12
+            - uses: actions/setup-node@v7
               with:
-                  node-version: 22
+                  node-version: 24
                   cache: pnpm
-            - uses: browser-actions/setup-chrome@v1
+            - uses: browser-actions/setup-chrome@v2
 
             - name: Setup Web-fetch
               run: pnpm i web-fetch -g
@@ -57,7 +57,7 @@ jobs:
             - name: Fetch first URL in Issue Body
               run: web-fetch $(echo "${{ github.event.issue.Body }}" | grep -Eo "https?://\S+")
 
-            - uses: stefanzweifel/git-auto-commit-action@v5
+            - uses: stefanzweifel/git-auto-commit-action@v7
               with:
                   commit_message: '${{ github.event.issue.title }}'
 ```
@@ -78,4 +78,4 @@ https://github.com/TechQuery/Web-fetch/blob/d4c574adb6ed4b3030995f4ea26911e88d00
 
 [1]: https://libraries.io/npm/web-fetch
 [2]: https://github.com/TechQuery/Web-fetch/actions/workflows/main.yml
-[3]: https://nodei.co/npm/web-fetch/
+[3]: https://npm.im/web-fetch/
