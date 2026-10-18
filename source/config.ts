@@ -8,8 +8,7 @@ import { likeOf } from './parser.js';
 export const userAgent =
     'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; rv:11.0) like Gecko';
 
-// set `package.json`'s folder as Current Working Directory
-config({ path: join(fileURLToPath(import.meta.url), '../.env') });
+config({ path: ['./.env', join(fileURLToPath(import.meta.url), '../.env')] });
 
 const { chrome, msedge, firefox } = process.env;
 

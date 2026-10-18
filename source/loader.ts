@@ -66,7 +66,7 @@ export async function loadPage(URI: string, root_selector = 'body') {
 }
 
 export interface MediaItem {
-    MIME: string;
+    MIME?: string;
     name: string;
     data: Buffer;
 }
@@ -85,7 +85,7 @@ export async function* fetchMedia(root: HTMLElement, root_path = '') {
         }
 
         const { pathname, protocol, href } = source;
-        let MIME: string, data: Buffer;
+        let MIME: string | undefined, data: Buffer;
 
         if (protocol === 'data:') ({ MIME, data } = await blobFrom(href));
         else {
